@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>세무사 영업 프로그램</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="app-header">
+    <div>
+      <h1>세무사 영업 프로그램</h1>
+      <p>세무사 고객 후보 관리, 리서치 요약, 맞춤 영업 멘트 &amp; LLM 프롬프트를 빠르게 생성합니다.</p>
+    </div>
+  </header>
+
+  <main class="app-main">
+    <section class="card">
+      <h2>영업 대상 등록</h2>
+      <form id="prospectForm">
+        <div class="field-group">
+          <label for="companyName">상호 / 기업명</label>
+          <input type="text" id="companyName" placeholder="예: ABC 제조업" required />
+        </div>
+        <div class="field-group">
+          <label for="industry">업종</label>
+          <input type="text" id="industry" placeholder="예: 제조, 도소매, 온라인 플랫폼" />
+        </div>
+        <div class="field-group">
+          <label for="size">규모 / 매출</label>
+          <input type="text" id="size" placeholder="예: 30명, 연매출 20억" />
+        </div>
+        <div class="field-group">
+          <label for="contactInfo">담당자 / 연락처</label>
+          <input type="text" id="contactInfo" placeholder="예: 김세무, 010-1234-5678" />
+        </div>
+        <div class="field-group">
+          <label for="painPoints">관심 분야 / 핵심 이슈</label>
+          <textarea id="painPoints" placeholder="예: 세무조사 대비, 세무조정, 급여 신고 컨설팅"></textarea>
+        </div>
+        <div class="field-group">
+          <label for="researchNotes">Google 리서치/회사 정보</label>
+          <textarea id="researchNotes" placeholder="구글 검색, 공시 내용, 업종 특이점 등을 붙여넣기" rows="4"></textarea>
+        </div>
+        <div class="field-group">
+          <label for="notes">메모</label>
+          <textarea id="notes" placeholder="추가 특이사항, 다음 연락 예정일, 담당자 의견 등을 작성" rows="3"></textarea>
+        </div>
+        <div class="field-group row">
+          <button type="submit">대상 추가</button>
+          <button type="button" id="clearForm">초기화</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="card">
+      <h2>프로스펙트 목록</h2>
+      <div class="table-wrap">
+        <table id="prospectTable">
+          <thead>
+            <tr>
+              <th>상호</th>
+              <th>업종</th>
+              <th>규모</th>
+              <th>담당</th>
+              <th>이슈</th>
+              <th>상태</th>
+              <th>액션</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card split">
+      <div>
+        <h2>요약 &amp; 영업 메시지</h2>
+        <label for="selectedProspect">선택된 대상</label>
+        <div id="selectedProspect">대상을 선택하면 요약과 메시지를 생성합니다.</div>
+        <div class="button-row">
+          <button id="generatePitch" disabled>맞춤 영업 멘트 생성</button>
+          <button id="generatePrompt" disabled>LLM 프롬프트 생성</button>
+          <button id="generateChecklist" disabled>세무 영업 체크리스트 생성</button>
+          <button id="exportCsvButton">CSV 내보내기</button>
+        </div>
+      </div>
+      <div>
+        <h3>요약 결과</h3>
+        <div class="output-row">
+          <pre id="summaryOutput" class="output-box"></pre>
+          <button class="copy-button" data-target="summaryOutput">복사</button>
+        </div>
+        <h3>생성된 영업 멘트</h3>
+        <div class="output-row">
+          <pre id="pitchOutput" class="output-box"></pre>
+          <button class="copy-button" data-target="pitchOutput">복사</button>
+        </div>
+        <h3>LLM 프롬프트</h3>
+        <div class="output-row">
+          <pre id="promptOutput" class="output-box"></pre>
+          <button class="copy-button" data-target="promptOutput">복사</button>
+        </div>
+        <h3>세무 영업 체크리스트</h3>
+        <div class="output-row">
+          <pre id="checklistOutput" class="output-box"></pre>
+          <button class="copy-button" data-target="checklistOutput">복사</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="app-footer">
+    <p>이 앱은 세무사 영업 환경에 맞춰 고객 후보 관리, Google 리서치 요약, 맞춤 영업 멘트와 LLM 프롬프트 생성을 돕습니다.</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

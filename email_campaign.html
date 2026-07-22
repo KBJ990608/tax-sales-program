@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>영업메일 자동 발송</title>
+  <style>
+    body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f4f7ff; color: #0f172a; }
+    .page { max-width: 960px; margin: 0 auto; padding: 32px; }
+    .header { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 28px; }
+    .header h1 { margin: 0; font-size: clamp(2rem, 3vw, 2.8rem); }
+    .card { background: white; border-radius: 26px; padding: 28px; box-shadow: 0 28px 80px rgba(15, 23, 42, 0.08); }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 22px; }
+    .field { display: grid; gap: 10px; margin-bottom: 16px; }
+    label { font-weight: 600; }
+    input, textarea, select { width: 100%; border: 1px solid #cbd5e1; border-radius: 14px; padding: 12px 14px; font-size: 1rem; }
+    textarea { min-height: 120px; resize: vertical; }
+    button { border: none; border-radius: 14px; background: #4338ca; color: white; padding: 14px 20px; font-size: 1rem; font-weight: 700; cursor: pointer; }
+    .note { color: #64748b; font-size: 0.95rem; line-height: 1.6; margin-top: 8px; }
+    pre { background: #f8fbff; border: 1px solid #dbe2ff; border-radius: 18px; padding: 18px; overflow-x: auto; }
+    .result { margin-top: 18px; white-space: pre-wrap; word-break: break-word; }
+    .top-link { text-decoration: none; color: #4338ca; font-weight: 700; }
+    @media (max-width: 860px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="header">
+      <div>
+        <span style="display:inline-block; padding:8px 14px; background:#4338ca; color:white; border-radius:999px; font-weight:700;">메일 자동발송</span>
+        <h1>세무 영업메일 자동 발송</h1>
+        <p class="note">SMTP 계정으로 바로 영업메일을 발송합니다. 받는 사람 목록을 입력하고 메시지를 작성하세요.</p>
+      </div>
+      <a class="top-link" href="tax_sales_simple.html">기존 랜딩으로 이동</a>
+    </div>
+
+    <div class="card">
+      <div class="grid">
+        <div>
+          <div class="field"><label>SMTP 서버</label><input id="smtpServer" value="smtp.gmail.com" /></div>
+          <div class="field"><label>SMTP 포트</label><input id="smtpPort" value="587" /></div>
+          <div class="field"><label>발신 이메일</label><input id="senderEmail" placeholder="your@domain.com" /></div>
+          <div class="field"><label>발신자 이름</label><input id="senderName" placeholder="세무사 홍길동" /></div>
+          <div class="field"><label>비밀번호 / 앱 비밀번호</label><input id="smtpPassword" type="password" placeholder="Password or app password" /></div>
+        </div>
+
+        <div>
+          <div class="field"><label>받는 사람 목록</label><textarea id="recipients" placeholder="example1@domain.com\nexample2@domain.com"></textarea></div>
+          <div class="note">한 줄에 한 이메일 주소를 입력하세요. CSV 파일 업로드는 추후 추가 가능합니다.</div>
+        </div>
+      </div>
+
+      <div class="field"><label>메일 제목</label><input id="subject" value="온라인셀러 부가세·종합소득세 신고, 무료 체크리스트" /></div>
+      <div class="field"><label>메일 내용</label><textarea id="message">안녕하세요.
+
+온라인셀러·1인사업자의 부가세 신고와 종합소득세 신고를 보다 쉽게 준비할 수 있도록 무료 체크리스트를 준비했습니다.
+
+필요하시면 바로 보내드릴게요.
+
+감사합니다.
+</textarea></div>
+      <button id="sendButton">영업메일 자동 발송</button>
+      <div class="result" id="result">결과가 여기에 표시됩니다.</div>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('sendButton').addEventListener('click', async () => {
+      const sendButton = document.getElementById('sendButton');
+      sendButton.disabled = true;
+      sendButton.textContent = '전송 중...';
+      const data = {
+        smtpServer: document.getElementById('smtpServer').value.trim(),
+        smtpPort: document.getElementById('smtpPort').value.trim(),
+        senderEmail: document.getElementById('senderEmail').value.trim(),
+        senderName: document.getElementById('senderName').value.trim(),
+        smtpPassword: document.getElementById('smtpPassword').value,
+        recipients: document.getElementById('recipients').value.trim().split(/\r?\n/).filter(Boolean),
+        subject: document.getElementById('subject').value.trim(),
+        message: document.getElementById('message').value.trim(),
+      };
+      const resultEl = document.getElementById('result');
+      resultEl.textContent = '전송 요청을 서버로 전달 중입니다...';
+
+      try {
+        const res = await fetch('/send', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        });
+        const result = await res.json();
+        if (res.ok) {
+          resultEl.textContent = `전송 완료: ${result.sent}개 메일 발송 성공\n${result.detail}`;
+        } else {
+          resultEl.textContent = `오류: ${result.error || '메일 전송 실패'}\n${result.detail || ''}`;
+        }
+      } catch (error) {
+        resultEl.textContent = `서버 요청 실패: ${error.message}`;
+      }
+
+      sendButton.disabled = false;
+      sendButton.textContent = '영업메일 자동 발송';
+    });
+  </script>
+</body>
+</html>
