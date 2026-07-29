@@ -1,14 +1,24 @@
 # TaxMailer
 
-세무 정보를 받겠다고 직접 신청한 사장님들에게, 업체명·대표자가 들어간 맞춤 영업 메일을 보내는 과정을 하나의 흐름으로 묶은 Streamlit 기반 앱입니다.
+## 🔗 [▶ 지금 바로 체험하기 — 라이브 앱 열기](https://tax-sales-program-lcdppyk5cae6rif3vyyvuk.streamlit.app)
 
-**🔗 라이브 앱 — <https://tax-sales-program-lcdppyk5cae6rif3vyyvuk.streamlit.app>**
+### 🔑 체험용 관리자 비밀번호 — `1234`
 
 [![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://tax-sales-program-lcdppyk5cae6rif3vyyvuk.streamlit.app)
 
-> 링크를 눌렀을 때 앱 대신 Streamlit 로그인 화면이 뜬다면 앱이 비공개 상태입니다.
-> 소유자가 **Settings → Sharing** 을 **Public** 으로 바꾸면 누구나 열 수 있습니다.
-> ([배포 절차](#배포-streamlit-community-cloud) 참고)
+**2분 체험 순서**
+
+1. 위 링크로 접속 → 사장님이 보는 **① 신청받기** 랜딩이 열립니다.
+2. 왼쪽 사이드바에서 **② 명단 관리** 선택 → 비밀번호 **`1234`** 입력.
+3. **데모 데이터 불러오기** 클릭 → 가상 신청자 12명이 채워집니다.
+4. **③ 메일 보내기** 에서 **🧪 데모 발송 실행** → 실제 이메일은 전송되지 않습니다.
+
+> `1234`는 **누구나 둘러볼 수 있도록 공개한 체험용 비밀번호**입니다.
+> 실제 운영에 쓸 때는 반드시 다른 값으로 바꾸세요. ([설정 방법](#설정-secrets))
+
+---
+
+세무 정보를 받겠다고 직접 신청한 사장님들에게, 업체명·대표자가 들어간 맞춤 영업 메일을 보내는 과정을 하나의 흐름으로 묶은 Streamlit 기반 앱입니다.
 
 TaxMailer의 목적은 세무사의 영업 판단을 대체하는 것이 아닙니다. 명단 수집, 형식·이메일 검증, 중복 제거, 이름 치환, 광고 표기와 수신거부 안내 부착처럼 반복적이고 실수가 잦은 업무를 줄여, 세무사가 누구에게 무엇을 제안할지, 문안을 어떻게 다듬을지, 언제 보낼지 같은 판단에 더 집중하도록 돕는 것입니다. 그리고 수신에 동의한 사장님에게만 보내 합법적으로 운영합니다.
 
