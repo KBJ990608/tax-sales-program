@@ -2,9 +2,13 @@
 
 세무 정보를 받겠다고 직접 신청한 사장님들에게, 업체명·대표자가 들어간 맞춤 영업 메일을 보내는 과정을 하나의 흐름으로 묶은 Streamlit 기반 앱입니다.
 
-**🔗 라이브 앱 바로 열기 — <https://tax-sales-program-29f8n393axir3psbrx3nud.streamlit.app/>**
+**🔗 라이브 앱 — <https://tax-sales-program-29f8n393axir3psbrx3nud.streamlit.app/>**
 
 [![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://tax-sales-program-29f8n393axir3psbrx3nud.streamlit.app/)
+
+> 링크를 눌렀을 때 앱 대신 Streamlit 로그인 화면이 뜬다면 앱이 비공개 상태입니다.
+> 소유자가 **Settings → Sharing** 을 **Public** 으로 바꾸면 누구나 열 수 있습니다.
+> ([배포 절차](#배포-streamlit-community-cloud) 참고)
 
 TaxMailer의 목적은 세무사의 영업 판단을 대체하는 것이 아닙니다. 명단 수집, 형식·이메일 검증, 중복 제거, 이름 치환, 광고 표기와 수신거부 안내 부착처럼 반복적이고 실수가 잦은 업무를 줄여, 세무사가 누구에게 무엇을 제안할지, 문안을 어떻게 다듬을지, 언제 보낼지 같은 판단에 더 집중하도록 돕는 것입니다. 그리고 수신에 동의한 사장님에게만 보내 합법적으로 운영합니다.
 
@@ -120,17 +124,28 @@ $env:TAXMAILER_DEV=1; .venv\Scripts\streamlit run app.py   # Windows
 프로젝트 루트에 `.streamlit/secrets.toml` 파일을 만들고 아래 값을 넣습니다. (예시는 `.streamlit/secrets.toml.example`)
 
 ```toml
-admin_password = "강력한_비밀번호"          # [필수]
-anthropic_api_key = "sk-ant-..."           # [선택] AI 문안 생성용
+# [필수] 관리 화면 잠금. 없으면 ②③④가 아예 열리지 않습니다(fail-closed).
+admin_password = "CHANGE_ME"
 
-# [선택] 넣어두면 ③ 화면에 자동으로 채워집니다
-gmail_address = "you@gmail.com"
-gmail_app_password = "앱 비밀번호 16자리"
-sender_name = "행복세무회계 김세무"
+# [선택] AI 문안 생성용. 비워 두면 AI 버튼만 비활성화되고 앱은 정상 동작합니다.
+anthropic_api_key = ""
+
+# [선택] 넣어두면 ③ 메일 보내기 화면에 자동으로 채워집니다.
+gmail_address = ""
+gmail_app_password = ""
+sender_name = ""
 ```
 
-- `admin_password`: ②명단·③발송·④이력 화면을 여는 관리자 비밀번호입니다. **설정하지 않으면 관리 화면이 열리지 않습니다(fail-closed).** 구독자 명단은 개인정보이고 이 앱은 공개 배포될 수 있으므로, 설정 누락이 명단 공개로 이어지지 않게 막습니다.
-- `gmail_app_password`: 구글 계정 → 보안 → 2단계 인증 → 앱 비밀번호에서 발급한 16자리입니다. 구글 계정의 일반 비밀번호가 아닙니다.
+| 키 | 필수 | 없을 때 동작 |
+|---|---|---|
+| `admin_password` | ✅ | ②③④ 관리 화면이 열리지 않고 설정 안내만 표시 |
+| `anthropic_api_key` | | AI 생성 버튼만 비활성화 + 안내 문구. 고정 템플릿 5종은 그대로 사용 가능 |
+| `gmail_address` | | ③ 화면에서 직접 입력 |
+| `gmail_app_password` | | ③ 화면에서 직접 입력 (앱은 저장하지 않음) |
+| `sender_name` | | ③ 화면에서 직접 입력 |
+
+- `admin_password`: 구독자 명단은 개인정보이고 이 앱은 공개 배포될 수 있으므로, 설정 누락이 명단 공개로 이어지지 않게 막습니다. `CHANGE_ME`를 그대로 쓰지 말고 반드시 직접 만든 값으로 바꾸세요.
+- `gmail_app_password`: 구글 계정 → 보안 → 2단계 인증 → 앱 비밀번호에서 발급한 16자리입니다. 구글 계정의 일반 비밀번호가 아닙니다. 앱은 이 값을 어디에도 저장하지 않습니다.
 - 각 값은 환경변수(`ADMIN_PASSWORD`, `ANTHROPIC_API_KEY`, `GMAIL_ADDRESS`, `GMAIL_APP_PASSWORD`, `SENDER_NAME`)로 대신할 수도 있습니다.
 - `TAXMAILER_DATA_DIR` 환경변수로 CSV 저장 위치를 바꿀 수 있습니다. (기본값: `data/`)
 
@@ -138,10 +153,12 @@ sender_name = "행복세무회계 김세무"
 
 ## 배포 (Streamlit Community Cloud)
 
-1. 이 저장소를 Streamlit Community Cloud에 연결하고 Main file path를 `app.py` 로 지정합니다.
-2. App settings → Secrets 에 위 `secrets.toml` 내용을 그대로 붙여넣습니다. **`admin_password`는 반드시 넣어야 관리 화면이 열립니다.**
-3. 의존성은 `requirements.txt` 로 자동 설치됩니다. (`requirements-dev.txt` 는 테스트 전용이라 배포에는 쓰이지 않습니다)
-4. 링크를 받은 누구나 열 수 있게 하려면 **Settings → Sharing 을 Public 으로** 바꿉니다. 비공개 상태면 방문자가 Streamlit 로그인 화면으로 넘어갑니다. (관리 화면은 어차피 `admin_password` 로 따로 잠겨 있습니다)
+1. **앱 연결** — [share.streamlit.io](https://share.streamlit.io) 에서 이 저장소를 연결하고 Main file path를 `app.py`, Branch를 `main` 으로 지정합니다.
+2. **Secrets 입력** — 앱 선택 → **Settings → Secrets** 에 위 TOML 블록을 그대로 붙여넣고 `admin_password` 값을 바꿉니다. 저장하면 앱이 자동으로 다시 시작합니다.
+3. **공개 설정** — 링크를 받은 누구나 열 수 있게 하려면 앱 선택 → **Settings → Sharing** 에서 공개 범위를 **Public**(또는 *Anyone with the link*)으로 바꿉니다.
+   비공개 상태면 방문자가 앱 대신 Streamlit 로그인 화면(`share.streamlit.io/-/auth/app`)으로 넘어갑니다.
+   공개로 두어도 명단·발송·이력 화면은 `admin_password` 로 따로 잠겨 있어 방문자에게는 ① 신청받기 랜딩만 보입니다.
+4. **의존성** — `requirements.txt` 로 자동 설치됩니다. (`requirements-dev.txt` 는 테스트 전용이라 배포에는 쓰이지 않습니다)
 
 배포 환경의 파일시스템은 휘발성이라 재배포 시 `data/*.csv` 가 초기화됩니다. ② 명단 관리의 **명단 CSV 내려받기**로 주기적으로 백업하세요.
 
@@ -156,6 +173,7 @@ sender_name = "행복세무회계 김세무"
 - `tests/test_templates_mailer.py` — 템플릿 5종 치환 전수 검사, (광고)·수신거부 자동 부착, SMTP를 가짜로 대체한 발송 경로
 - `tests/test_ai.py` — 프롬프트 조립(플레이스홀더 회귀 방어), 모델 지정, 키 없을 때 동작
 - `tests/test_demo.py` — 데모 CSV 스키마·상태 커버리지, 실제 `data/*.csv` 무변경 보장, SMTP 미호출 보장
+- `tests/test_config.py` — `secrets.toml.example`이 코드가 읽는 키와 일치하는지, 키가 없을 때 안전하게 동작하는지, 배포 파일·README가 구현과 어긋나지 않는지
 - `tests/test_app_screens.py` — Streamlit `AppTest` 기반 화면 통합 테스트 (관리자 fail-closed, 발송 확인 게이트, 재발송 차단, 데모 모드 전환 등)
 
 테스트는 `tests/conftest.py`에서 저장 경로를 임시 디렉터리로 격리하고 관련 환경변수를 지우므로, 실제 `data/`와 secrets를 건드리지 않습니다.
@@ -170,7 +188,8 @@ demo/demo_발송이력.csv    가상 발송 이력 3건
 ```
 
 - **모두 가상 데이터입니다.** 실제 개인정보는 하나도 들어 있지 않습니다.
-- 이메일은 전부 `example.com` 도메인입니다. **실제로 수신되지 않는 예약 도메인**(RFC 2606)이라, 설령 발송을 시도해도 실제 사람에게 도달하지 않습니다.
+- 형식이 올바른 주소는 **전부 `example.com`** 입니다. **실제로 수신되지 않는 예약 도메인**(RFC 2606)이라, 설령 발송을 시도해도 실제 사람에게 도달하지 않습니다.
+- 나머지 2건(`wrong-email`, `missing@`)은 검증 실패를 보여주기 위해 **일부러 형식을 깨뜨린 값**이라 애초에 발송 대상에서 제외됩니다.
 - 정상 대상, 중복 신청, 잘못된 이메일 형식, 이미 발송된 대상, 앞뒤 공백, HTML 특수문자까지 모든 상태가 한 번에 들어 있어 명단 검증 로직을 전부 확인할 수 있습니다.
 
 **사용 방법**
