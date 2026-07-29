@@ -91,6 +91,24 @@ def test_demo_covers_every_status():
     assert s.count("발송완료") >= 2
 
 
+def test_demo_status_counts_match_readme():
+    """README 가 적어 둔 숫자(발송대기 6 / 발송완료 3 / 확인필요 3)와 일치해야 한다.
+
+    데모 CSV 를 고치면 이 테스트가 먼저 깨지므로 README 가 조용히 틀려지지 않는다.
+    """
+    s = _statuses()
+    counts = {
+        "발송대기": s.count("발송대기"),
+        "발송완료": s.count("발송완료"),
+        "확인필요": s.count("중복") + s.count("잘못된 이메일"),
+    }
+    assert counts == {"발송대기": 6, "발송완료": 3, "확인필요": 3}
+
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    for label, n in counts.items():
+        assert f"{label} {n}건" in readme, f"README 의 '{label} {n}건' 표기가 실제와 다름"
+
+
 def test_demo_has_duplicate_email_pair():
     emails = [r["이메일"].strip().lower() for r in demo.load_demo_subscribers()]
     assert emails.count("duplicate@example.com") == 2

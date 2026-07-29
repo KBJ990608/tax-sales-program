@@ -126,9 +126,49 @@ def test_readme_documents_every_secret_key():
         assert key in text, f"README 에 {key} 설명이 없음"
 
 
+LIVE_URL = "https://tax-sales-program-lcdppyk5cae6rif3vyyvuk.streamlit.app"
+# ai.py 를 Main file path 로 잘못 지정해 흰 화면이 나오던 폐기된 배포 주소
+RETIRED_URL_SLUG = "29f8n393axir3psbrx3nud"
+
+
 def test_readme_has_live_app_link():
     text = README.read_text(encoding="utf-8")
-    assert "streamlit.app" in text
+    assert LIVE_URL in text
+
+
+def test_readme_badge_points_to_live_app():
+    text = README.read_text(encoding="utf-8")
+    assert f"streamlit_badge_black_white.svg)]({LIVE_URL})" in text
+
+
+def test_retired_deployment_url_is_gone_everywhere():
+    """폐기된 배포 주소가 저장소 어디에도 남아 있으면 안 된다."""
+    offenders = []
+    for path in ROOT.rglob("*"):
+        if not path.is_file():
+            continue
+        parts = set(path.parts)
+        if {".git", ".venv", "__pycache__"} & parts:
+            continue
+        if path.suffix not in {".md", ".py", ".toml", ".txt", ".html", ".js", ".css"}:
+            continue
+        try:
+            if RETIRED_URL_SLUG in path.read_text(encoding="utf-8", errors="ignore"):
+                offenders.append(str(path.relative_to(ROOT)))
+        except OSError:
+            pass
+    # 이 테스트 파일 자신은 슬러그를 상수로 들고 있으므로 제외
+    offenders = [f for f in offenders if not f.endswith("test_config.py")]
+    assert not offenders, f"폐기된 배포 주소가 남아 있음: {offenders}"
+
+
+def test_readme_documents_app_py_as_main_file():
+    """Main file path 를 ai.py 로 잘못 잡아 흰 화면이 났던 사고의 재발 방지."""
+    text = README.read_text(encoding="utf-8")
+    assert "Main file path" in text
+    assert "`app.py`" in text
+    # ai.py 가 메인이 아니라는 경고가 있어야 한다
+    assert "ai.py" in text and "보조 모듈" in text
 
 
 def test_readme_does_not_promise_removed_features():

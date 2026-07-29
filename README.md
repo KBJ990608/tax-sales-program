@@ -2,9 +2,9 @@
 
 세무 정보를 받겠다고 직접 신청한 사장님들에게, 업체명·대표자가 들어간 맞춤 영업 메일을 보내는 과정을 하나의 흐름으로 묶은 Streamlit 기반 앱입니다.
 
-**🔗 라이브 앱 — <https://tax-sales-program-29f8n393axir3psbrx3nud.streamlit.app/>**
+**🔗 라이브 앱 — <https://tax-sales-program-lcdppyk5cae6rif3vyyvuk.streamlit.app>**
 
-[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://tax-sales-program-29f8n393axir3psbrx3nud.streamlit.app/)
+[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://tax-sales-program-lcdppyk5cae6rif3vyyvuk.streamlit.app)
 
 > 링크를 눌렀을 때 앱 대신 Streamlit 로그인 화면이 뜬다면 앱이 비공개 상태입니다.
 > 소유자가 **Settings → Sharing** 을 **Public** 으로 바꾸면 누구나 열 수 있습니다.
@@ -153,7 +153,18 @@ sender_name = ""
 
 ## 배포 (Streamlit Community Cloud)
 
-1. **앱 연결** — [share.streamlit.io](https://share.streamlit.io) 에서 이 저장소를 연결하고 Main file path를 `app.py`, Branch를 `main` 으로 지정합니다.
+1. **앱 연결** — [share.streamlit.io](https://share.streamlit.io) 에서 아래 값으로 앱을 만듭니다.
+
+   | 항목 | 값 |
+   |---|---|
+   | Repository | `KBJ990608/tax-sales-program` |
+   | Branch | `main` |
+   | **Main file path** | **`app.py`** |
+
+   > ⚠️ **Main file path는 반드시 `app.py` 여야 합니다.**
+   > `ai.py` 는 Claude API 호출을 담당하는 보조 모듈이라 화면을 그리는 코드가 없습니다.
+   > 이걸 메인 파일로 지정하면 서버는 정상 실행되지만 TaxMailer UI가 나오지 않고
+   > **빈 화면만 보입니다.** 흰 화면이 뜬다면 이 설정부터 확인하세요.
 2. **Secrets 입력** — 앱 선택 → **Settings → Secrets** 에 위 TOML 블록을 그대로 붙여넣고 `admin_password` 값을 바꿉니다. 저장하면 앱이 자동으로 다시 시작합니다.
 3. **공개 설정** — 링크를 받은 누구나 열 수 있게 하려면 앱 선택 → **Settings → Sharing** 에서 공개 범위를 **Public**(또는 *Anyone with the link*)으로 바꿉니다.
    비공개 상태면 방문자가 앱 대신 Streamlit 로그인 화면(`share.streamlit.io/-/auth/app`)으로 넘어갑니다.
@@ -207,15 +218,17 @@ demo/demo_발송이력.csv    가상 발송 이력 3건
 
 ## 추천 체험 순서
 
-**데모 데이터로 빠르게 둘러보기**
+**라이브 앱에서 데모로 둘러보기** (2분)
 
-1. ② 명단 관리에서 **데모 데이터 불러오기** 를 누릅니다.
-2. 발송대기 / 발송완료 / 중복 / 잘못된 이메일 상태가 어떻게 구분되는지 봅니다.
-3. ③ 메일 보내기에서 고정 템플릿 또는 AI 맞춤 생성을 고릅니다.
-4. 업체명·대표자가 치환되고 (광고)·수신거부가 붙은 미리보기를 확인합니다.
-5. **🧪 데모 발송 실행** 으로 실제 메일 없이 발송 이력을 만들어 봅니다.
-6. ④ 발송 이력에서 기록을 확인하고, ③으로 돌아가 같은 템플릿의 재발송이 차단되는지 봅니다.
-7. **데모 종료** 를 눌러 실제 데이터 모드로 돌아갑니다.
+1. [라이브 앱](https://tax-sales-program-lcdppyk5cae6rif3vyyvuk.streamlit.app)에 접속합니다. 처음 보이는 화면이 ① 신청받기 랜딩입니다.
+2. 왼쪽 사이드바에서 **② 명단 관리** 를 선택합니다.
+3. 관리자 비밀번호를 입력해 로그인합니다. (`admin_password` 로 설정한 값)
+4. **데모 데이터 불러오기** 를 누릅니다.
+5. 상단 지표에서 **발송대기 6건 / 발송완료 3건 / 확인필요 3건** 과, 표에서 🟢 발송대기 · ✅ 발송완료 · ⚠️ 중복 · ❌ 잘못된 이메일이 어떻게 구분되는지 봅니다.
+6. **③ 메일 보내기** 에서 템플릿을 고르고, 업체명·대표자가 치환되고 (광고)·수신거부가 붙은 미리보기를 확인합니다.
+7. 확인 체크 후 **🧪 데모 발송 실행** 을 누릅니다. **실제 SMTP는 호출되지 않고 이메일도 전송되지 않습니다.**
+8. **④ 발송 이력** 에서 방금 만들어진 기록을 확인하고, ③으로 돌아가 같은 템플릿의 재발송이 차단되는지 봅니다.
+9. **데모 종료** 를 눌러 실제 데이터 모드로 돌아갑니다.
 
 **실제 데이터로 확인하기**
 
@@ -230,22 +243,29 @@ demo/demo_발송이력.csv    가상 발송 이력 3건
 ## 프로젝트 구조
 
 ```
-app.py                 Streamlit UI와 발송 승인 흐름
-templates.py           고정 메일 5종 템플릿과 치환 헬퍼
-ai.py                  Claude API 기반 문안 생성
-mailer.py              Gmail SMTP 발송, (광고)·수신거부 자동 부착
-store.py               CSV 저장, 검증, 중복·발송여부 판정, 입력 sanitize
-auth.py                관리자 비밀번호 잠금 (fail-closed)
-demo.py                데모 데이터 로딩과 데모 세션 상태 관리
-tests/                 pytest 테스트
-demo/                  공개 예시 데이터 (Git 포함)
+app.py                 ★ Streamlit 메인 앱 — 4개 화면과 전체 사용자 흐름
+                         로컬 실행(streamlit run app.py)과 Streamlit Cloud
+                         Main file path 로 지정해야 하는 유일한 파일
+ai.py                    Anthropic Claude 문안 생성 보조 모듈
+                         단독 실행용 앱이 아니며 화면을 그리지 않는다
+                         (메인 파일로 지정하면 빈 화면이 나온다)
+demo.py                  데모 데이터 로딩과 데모 세션 상태 관리
+                         세션 메모리만 사용하며 실제 data/*.csv 와 분리
+templates.py             고정 메일 5종 템플릿과 치환 헬퍼
+mailer.py                Gmail SMTP 발송, (광고)·수신거부 자동 부착
+store.py                 CSV 저장, 검증, 중복·발송여부 판정, 입력 sanitize
+auth.py                  관리자 비밀번호 잠금 (fail-closed)
+demo/                    공개 가상 예시 데이터 (Git 포함, 개인정보 없음)
   demo_구독자.csv
   demo_발송이력.csv
-data/                  구독자.csv, 발송이력.csv (자동 생성, Git 제외)
-.streamlit/            config.toml(테마), secrets.toml(비밀번호·키, Git 제외)
-requirements.txt       배포용 의존성
-requirements-dev.txt   테스트용 의존성
+data/                    실제 구독자.csv·발송이력.csv (자동 생성, Git 제외)
+tests/                   pytest 테스트
+.streamlit/              config.toml(테마), secrets.toml(비밀번호·키, Git 제외)
+requirements.txt         배포용 의존성
+requirements-dev.txt     테스트용 의존성
 ```
+
+**실행 진입점은 `app.py` 하나뿐입니다.** 나머지 `.py` 파일은 `app.py` 가 import 하는 모듈이라 단독으로 `streamlit run` 해도 화면이 나오지 않습니다.
 
 저장소에 함께 있는 정적 HTML/CSS/JS 파일(`index.html`, `landing.html`, `email_campaign.html`, `tax_sales_simple.html`, `netlify.toml` 등)과 `email_server.py`, `scrape_leads.py` 는 이 앱 이전에 만든 참고용 레거시이며, 현재 프로그램은 `app.py` 로 실행되는 Streamlit 앱입니다. `app.py` 는 이 파일들을 import 하지 않습니다.
 
