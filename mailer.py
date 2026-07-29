@@ -18,7 +18,9 @@ UNSUBSCRIBE_NOTICE = (
 def with_ad_prefix(subject: str) -> str:
     """제목 앞에 (광고) 표기를 붙인다. 이미 있으면 그대로 둔다."""
     subject = (subject or "").strip()
-    return subject if subject.startswith("(광고)") else f"(광고) {subject}"
+    if subject.startswith("(광고)"):
+        return subject
+    return f"(광고) {subject}".strip()  # 제목이 비면 뒤에 공백이 남지 않도록
 
 
 def with_unsubscribe(body: str) -> str:

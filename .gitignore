@@ -1,6 +1,9 @@
 .venv/
 __pycache__/
 *.pyc
+# 실제 구독자·발송 데이터는 개인정보이므로 커밋하지 않는다.
 data/*.csv
+# demo/*.csv 는 공개 예시(가상 데이터)이므로 저장소에 포함한다. 위 규칙은
+# data/ 만 대상으로 하므로 별도 예외가 필요 없다.
 .streamlit/secrets.toml
 .DS_Store

@@ -6,11 +6,15 @@
 파일 기반이라 별도 DB 없이 동작한다. (Streamlit Cloud 배포 시에는 휘발성)
 """
 import csv
+import os
 import re
 from datetime import datetime
 from pathlib import Path
 
-DATA_DIR = Path(__file__).parent / "data"
+# 저장 위치는 환경변수로 바꿀 수 있다. Streamlit Cloud 처럼 앱 디렉터리가
+# 재배포마다 초기화되는 환경에서 영구 볼륨을 가리키거나, 테스트에서 임시
+# 디렉터리로 격리하기 위해서다.
+DATA_DIR = Path(os.environ.get("TAXMAILER_DATA_DIR", str(Path(__file__).parent / "data")))
 SUBSCRIBERS_CSV = DATA_DIR / "구독자.csv"
 HISTORY_CSV = DATA_DIR / "발송이력.csv"
 
@@ -21,13 +25,17 @@ HISTORY_FIELDS = ["이메일", "업체명", "대표자", "템플릿", "제목", 
 EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 
 
-def _now() -> str:
+def now() -> str:
+    """CSV에 기록하는 시각 문자열. 데모 이력도 같은 형식을 쓴다."""
     return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+
+_now = now  # 기존 내부 호출 호환
 
 
 def _ensure(path: Path, fields: list[str]) -> None:
     """CSV가 없으면 헤더만 만들어 둔다."""
-    DATA_DIR.mkdir(exist_ok=True)
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
     if not path.exists():
         with path.open("w", newline="", encoding="utf-8-sig") as f:
             csv.DictWriter(f, fieldnames=fields).writeheader()
@@ -104,13 +112,22 @@ def delete_subscriber(email: str) -> None:
         w.writerows(rows)
 
 
-def already_sent(email: str, template_name: str) -> bool:
-    """같은 사람에게 같은 템플릿(캠페인)을 이미 보냈는지."""
+def has_sent(history: list[dict], email: str, template_name: str) -> bool:
+    """주어진 이력 목록 안에 (이메일, 템플릿) 조합이 있는지.
+
+    파일을 읽지 않는 순수 함수라, 데모 모드처럼 이력이 메모리에만 있는
+    경우에도 같은 판정 로직을 그대로 쓸 수 있다.
+    """
     target = (email or "").strip().lower()
     return any(
         r.get("이메일", "").strip().lower() == target and r.get("템플릿", "") == template_name
-        for r in load_history()
+        for r in history
     )
+
+
+def already_sent(email: str, template_name: str) -> bool:
+    """같은 사람에게 같은 템플릿(캠페인)을 이미 보냈는지. (실제 데이터 기준)"""
+    return has_sent(load_history(), email, template_name)
 
 
 def record_send(email: str, company: str, ceo: str, template_name: str, subject: str) -> None:
@@ -128,14 +145,23 @@ def record_send(email: str, company: str, ceo: str, template_name: str, subject:
         )
 
 
-def clean_subscribers() -> list[dict]:
-    """유효한(이메일 형식 정상) 구독자만 반환. 중복은 최초 1건만."""
+def clean_rows(rows: list[dict]) -> list[dict]:
+    """유효한(이메일 형식 정상) 행만 반환. 중복은 최초 1건만.
+
+    파일을 읽지 않는 순수 함수. 데모 모드도 이 함수를 그대로 써서
+    실제 발송 대상 추출 로직과 동일하게 동작한다.
+    """
     seen: set[str] = set()
     cleaned = []
-    for r in load_subscribers():
+    for r in rows:
         email = r.get("이메일", "").strip().lower()
         if not is_valid_email(email) or email in seen:
             continue
         seen.add(email)
         cleaned.append(r)
     return cleaned
+
+
+def clean_subscribers() -> list[dict]:
+    """유효한 구독자만 반환. (실제 데이터 기준)"""
+    return clean_rows(load_subscribers())

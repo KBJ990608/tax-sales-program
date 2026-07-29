@@ -13,7 +13,12 @@ import anthropic
 import streamlit as st
 from pydantic import BaseModel
 
-MODEL = "claude-opus-4-8"
+MODEL = "claude-opus-5"
+
+# 프롬프트에 넣을 리터럴 플레이스홀더. f-string 안에서 중괄호를 그대로 쓰면
+# 파이썬이 변수로 평가해 NameError가 나므로 상수로 분리한다.
+COMPANY_PLACEHOLDER = "{업체명}"
+CEO_PLACEHOLDER = "{대표자}"
 
 
 class EmailDraft(BaseModel):
@@ -53,7 +58,7 @@ def generate_template(brief: str, tone: str) -> tuple[str, str]:
 목적/내용: {brief.strip() or "세무 정보 신청 감사 및 상담 제안"}
 톤: {tone.strip() or "정중하고 담백하게"}
 
-{업체명} 와 {대표자} 플레이스홀더를 반드시 포함해줘."""
+{COMPANY_PLACEHOLDER} 와 {CEO_PLACEHOLDER} 플레이스홀더를 반드시 포함해줘."""
 
     response = client.messages.parse(
         model=MODEL,

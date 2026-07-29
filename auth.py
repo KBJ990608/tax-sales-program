@@ -24,19 +24,36 @@ def _configured_password() -> str | None:
     return os.environ.get("ADMIN_PASSWORD")
 
 
+def _dev_mode() -> bool:
+    """로컬 개발 전용 우회. 환경변수를 직접 켠 경우에만 참."""
+    return os.environ.get("TAXMAILER_DEV", "").strip().lower() in {"1", "true", "yes"}
+
+
 def require_admin() -> bool:
     """관리자 인증 통과 시 True. 아니면 로그인 폼을 그리고 False.
 
-    비밀번호가 아예 설정돼 있지 않으면(로컬 개발) 경고만 띄우고 통과시킨다.
+    비밀번호가 설정돼 있지 않으면 관리 화면을 막는다(fail-closed).
+    구독자 명단은 개인정보이고 이 앱은 공개 배포될 수 있으므로, 설정 누락이
+    곧 명단 공개로 이어지지 않도록 통과시키지 않는다.
+    로컬 개발에서는 TAXMAILER_DEV=1 로 명시적으로 우회한다.
     """
     password = _configured_password()
 
     if not password:
-        st.warning(
-            "⚠️ 관리자 비밀번호가 설정되지 않았습니다(로컬 개발 모드). "
-            "배포 전 반드시 secrets에 `admin_password`를 설정하세요."
+        if _dev_mode():
+            # 개발자가 직접 켠 우회 모드라 화면에 배너를 띄우지 않는다.
+            return True
+        st.error("🔒 관리자 비밀번호가 설정되지 않아 관리 화면을 열 수 없습니다.")
+        st.markdown(
+            "구독자 명단·발송 이력은 개인정보이므로 비밀번호 없이 공개하지 않습니다.\n\n"
+            "**로컬에서 설정하기** — `.streamlit/secrets.toml` 에 다음을 추가한 뒤 앱을 재시작하세요.\n"
+            "```toml\n"
+            'admin_password = "원하는 비밀번호"\n'
+            "```\n"
+            "**배포 환경** — Streamlit Cloud → App settings → Secrets 에 같은 값을 넣으세요.\n\n"
+            "비밀번호 없이 잠시 확인만 하려면 `TAXMAILER_DEV=1` 환경변수로 실행하세요."
         )
-        return True
+        return False
 
     if st.session_state.get("_admin_ok"):
         return True
